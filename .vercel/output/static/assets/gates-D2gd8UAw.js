@@ -1,0 +1,1 @@
+import{t as e}from"./react-SIfiwpqq.js";import{l as t}from"./preload-helper-DguXbu1c.js";import{t as n}from"./useNavigate-BqfJTjvl.js";e();var r=t(),i=`/login`;function a({to:e=i}){return(0,r.jsx)(n,{to:e})}export{a as t};

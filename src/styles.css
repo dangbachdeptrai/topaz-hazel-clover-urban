@@ -1,0 +1,257 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+@theme {
+  --color-bg: #07080a;
+  --color-bg-elevated: #101218;
+  --color-surface: #161a22;
+  --color-fg: #e8efe8;
+  --color-muted: #93a09a;
+  --color-subtle: #6b7873;
+  --color-primary: #2dd4a0;
+  --color-primary-fg: #052016;
+  --color-gold: #d4af37;
+  --color-danger: #e85d4c;
+  --color-border: color-mix(in oklab, #2dd4a0 22%, #1c2420);
+  --radius: 0.9rem;
+  --font-sans: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", "Noto Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html:not(.dark) {
+  --color-bg: #f4efe4;
+  --color-bg-elevated: #fbf7ee;
+  --color-surface: #ece4d4;
+  --color-fg: #1a221c;
+  --color-muted: #5c6b63;
+  --color-subtle: #7a877f;
+  --color-primary: #0f8f6a;
+  --color-primary-fg: #f4fff9;
+  --color-gold: #9a7420;
+  --color-danger: #c24132;
+  --color-border: color-mix(in oklab, #0f8f6a 28%, #d9d0be);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  html:not(.dark) {
+    color-scheme: light;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.jade-frame {
+  border: 1px solid var(--color-border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-primary) 7%, transparent),
+      transparent 42%
+    ),
+    var(--color-bg-elevated);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-gold) 12%, transparent),
+    0 18px 40px color-mix(in oklab, black 28%, transparent);
+}
+
+.scripture-sheet {
+  background: color-mix(in oklab, var(--color-bg-elevated) 88%, var(--color-primary));
+  border: 1px solid var(--color-border);
+}
+
+.talisman {
+  position: relative;
+  overflow: hidden;
+}
+.talisman::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in oklab, white 22%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-40%);
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.talisman:hover::after {
+  transform: translateX(40%);
+}
+
+.spirit-field {
+  background:
+    radial-gradient(
+      900px 520px at 12% -10%,
+      color-mix(in oklab, var(--color-primary) 16%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      700px 480px at 108% 8%,
+      color-mix(in oklab, var(--color-gold) 10%, transparent),
+      transparent 52%
+    ),
+    radial-gradient(
+      640px 420px at 50% 120%,
+      color-mix(in oklab, var(--color-primary) 8%, transparent),
+      transparent 60%
+    );
+}
+
+.spirit-mist {
+  position: absolute;
+  width: 55vw;
+  height: 40vh;
+  min-width: 280px;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.35;
+  background: color-mix(in oklab, var(--color-primary) 40%, transparent);
+  animation: mist-drift 28s ease-in-out infinite;
+}
+.spirit-mist-a {
+  left: -8%;
+  top: -6%;
+}
+.spirit-mist-b {
+  right: -10%;
+  top: 18%;
+  background: color-mix(in oklab, var(--color-gold) 28%, transparent);
+  animation-duration: 36s;
+  animation-direction: reverse;
+  opacity: 0.22;
+}
+
+@keyframes mist-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, 8%, 0) scale(1.08);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.enter-1,
+.enter-2,
+.enter-3,
+.enter-4 {
+  animation: fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.enter-2 {
+  animation-delay: 70ms;
+}
+.enter-3 {
+  animation-delay: 140ms;
+}
+.enter-4 {
+  animation-delay: 210ms;
+}
+
+@keyframes countdown-pop {
+  from {
+    opacity: 0.35;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.countdown-pop {
+  animation: countdown-pop 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes seek-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+.seek-ring {
+  animation: seek-ring 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.spirit-avatar {
+  position: relative;
+}
+.spirit-avatar.frame-jade {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--color-primary) 75%, transparent),
+    0 0 16px color-mix(in oklab, var(--color-primary) 35%, transparent);
+}
+.spirit-avatar.frame-gold {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--color-gold) 80%, transparent),
+    0 0 16px color-mix(in oklab, var(--color-gold) 40%, transparent);
+}
+.spirit-avatar.frame-void {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--color-fg) 28%, transparent),
+    0 0 18px color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+.spirit-avatar.frame-crimson {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--color-danger) 80%, transparent),
+    0 0 16px color-mix(in oklab, var(--color-danger) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .countdown-pop,
+  .seek-ring,
+  .spirit-mist,
+  .enter-1,
+  .enter-2,
+  .enter-3,
+  .enter-4 {
+    animation: none;
+  }
+}
+
+.katex {
+  font-size: 1.05em;
+}
+.katex-display {
+  margin: 0.6em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}

@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Linh Toán Các",
+      "hasCanvas": false,
+      "bodyTextLen": 753,
+      "bodyTextHash": "b3af984cc9538e6b979d216124f7f97563248e189c1ee20c8b43af0790d23d1c",
+      "bodyTextPrefix": "∑ Linh Toán Các TOÁNMASTER Kho Đề Lôi Đài Bí Cảnh Thiên Tháp Tôn",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Linh Toán Các",
+      "hasCanvas": false,
+      "bodyTextLen": 742,
+      "bodyTextHash": "1912f64472bee82b846bbca0f81a555a6db08b267c54b07d12234d1d0c069edb",
+      "bodyTextPrefix": "∑ Linh Toán Các Kho Đề Lôi Đài Bí Cảnh Thiên Tháp Tông Môn Chợ L",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

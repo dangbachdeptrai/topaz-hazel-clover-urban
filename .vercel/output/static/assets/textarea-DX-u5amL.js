@@ -1,0 +1,1 @@
+import{l as e}from"./preload-helper-DguXbu1c.js";import{a as t}from"./spirit-field-BmaZvnuw.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`textarea`,{className:t(`min-h-28 w-full rounded-[12px] border border-border bg-bg-elevated px-3 py-2 text-sm text-fg outline-none placeholder:text-subtle focus:border-primary`,e),...r})}export{r as t};
