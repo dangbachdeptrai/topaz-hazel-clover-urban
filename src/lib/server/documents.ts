@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
+import { describeApiError } from "@/lib/ocr-parse";
 import { ensureProfile } from "@/lib/server/cultivation";
 import type { AnswerKey, Difficulty, OcrConfidence, OcrDraft, OcrDraftQuestion, VaultDoc } from "@/lib/types";
+
 
 const MAX = 1_800_000;
 const OCR_SYSTEM = `Bạn là Thiên Nhãn OCR cho đề Toán THPTQG / VACT / TSA tiếng Việt.
@@ -156,16 +158,8 @@ async function chatJson(apiKey: string, body: Record<string, unknown>) {
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  if (!res.ok) {
-    let detail = `OCR lỗi ${res.status}`;
-    try {
-      const err = JSON.parse(text) as { error?: { message?: string } };
-      if (err.error?.message) detail = err.error.message.slice(0, 180);
-    } catch {
-      /* keep status */
-    }
-    throw new Error(detail);
-  }
+  if (!res.ok) throw new Error(describeApiError(res.status, text));
+
   const json = JSON.parse(text) as { choices?: { message?: { content?: string } }[] };
   return json.choices?.[0]?.message?.content ?? "{}";
 }

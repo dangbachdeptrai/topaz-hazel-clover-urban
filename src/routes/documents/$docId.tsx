@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { MathText } from "@/lib/math-text";
+import { parseExamText } from "@/lib/ocr-parse";
 import { extractExamFromDoc, getDoc, saveOcrExam } from "@/lib/server/documents";
 import type { AnswerKey, OcrDraft, OcrDraftQuestion } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,7 @@ function DocView() {
   const [draft, setDraft] = useState<OcrDraft | null>(null);
   const [busy, setBusy] = useState<"ocr" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [paste, setPaste] = useState("");
 
   useEffect(() => {
     getDoc({ data: docId }).then((d) => {
@@ -111,8 +114,32 @@ function DocView() {
           ) : null}
         </div>
         {!canOcr && doc ? (
-          <p className="mt-3 text-xs text-muted">Chụp trang PDF thành JPG/PNG rồi cất lại để bóc tách.</p>
+          <p className="mt-3 text-xs text-muted">Chụp trang PDF thành JPG/PNG rồi cất lại, hoặc dán chữ đề bên dưới.</p>
         ) : null}
+
+        <div className="jade-frame mt-6 space-y-3 rounded-[20px] p-4">
+          <p className="text-sm font-medium">Dán chữ đề (khi Thiên Nhãn hết linh khí)</p>
+          <Textarea
+            value={paste}
+            onChange={(e) => setPaste(e.target.value)}
+            rows={7}
+            placeholder={"Câu 1. ...\nA. ...\nB. ...\nC. ...\nD. ...\nCâu 2. ..."}
+          />
+          <Button
+            variant="outline"
+            disabled={!paste.trim() || busy !== null}
+            onClick={() => {
+              setError(null);
+              try {
+                setDraft(parseExamText(paste, doc?.title ?? "Đề dán chữ"));
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Không bóc được chữ");
+              }
+            }}
+          >
+            Bóc từ chữ
+          </Button>
+        </div>
 
         {draft ? (
           <section className="mt-10">
@@ -154,7 +181,8 @@ function DocView() {
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {KEYS.map((k) => {
-                      const val = q[`option${k}` as "optionA"];
+                      const val =
+                        k === "A" ? q.optionA : k === "B" ? q.optionB : k === "C" ? q.optionC : q.optionD;
                       const selected = q.correct === k;
                       return (
                         <button
