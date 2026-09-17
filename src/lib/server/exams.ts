@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import { equippedPerks, perkBonus } from "@/lib/server/cultivation";
 import { ensureSeed, insertShuffledExam } from "@/lib/server/seed";
 import type { AnswerKey, Difficulty, Exam, ExamAttempt, ExamType, QuestionPublic } from "@/lib/types";
+import { answerKey } from "@/lib/utils";
 
 function mapExam(r: {
   id: string;
@@ -55,6 +56,10 @@ export const getExam = createServerFn({ method: "GET" })
     return rows[0] ? mapExam(rows[0]) : null;
   });
 
+function keyOf(v: unknown): AnswerKey {
+  return answerKey(v);
+}
+
 function fadeWrong(q: {
   id: string;
   option_a: string;
@@ -63,7 +68,8 @@ function fadeWrong(q: {
   option_d: string;
   correct_answer: string;
 }): AnswerKey | null {
-  const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== q.correct_answer);
+  const correct = keyOf(q.correct_answer);
+  const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== correct);
   let h = 2166136261;
   for (let i = 0; i < q.id.length; i++) h = Math.imul(h ^ q.id.charCodeAt(i), 16777619);
   return wrong[(h >>> 0) % wrong.length] ?? null;
@@ -148,7 +154,8 @@ export const submitAttempt = createServerFn({ method: "POST" })
     );
     let score = 0;
     for (const q of qs) {
-      if (data.answers[q.id] === q.correct_answer) score += Number(q.score);
+      if (data.answers[q.id] === keyOf(q.correct_answer)) score += Number(q.score);
+
     }
     score = Math.round(score * 100) / 100;
     const spent = Math.max(
@@ -208,7 +215,8 @@ export const getAttemptResult = createServerFn({ method: "GET" })
       items: qs.map((q) => ({
         ...q,
         picked: answers[q.id] ?? null,
-        ok: answers[q.id] === q.correct_answer,
+        ok: answers[q.id] === keyOf(q.correct_answer),
+        correct_answer: keyOf(q.correct_answer),
       })),
     };
   });

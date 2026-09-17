@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import { equippedPerks, ensureProfile, grantTowerClear, perkBonus } from "@/lib/server/cultivation";
 import { ensureSeed } from "@/lib/server/seed";
 import type { AnswerKey, QuestionPublic, TowerRun } from "@/lib/types";
+import { answerKey } from "@/lib/utils";
 
 const FLOOR_SECONDS = 90;
 const QS_PER_FLOOR = 5;
@@ -90,7 +91,8 @@ async function hydrate(
     .map((id, i) => {
       const q = byId.get(id);
       if (!q) return null;
-      const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== q.correct_answer);
+      const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== answerKey(q.correct_answer));
+
       const faded = bonus.eliminate ? wrong[i % wrong.length] : null;
       return {
         id: q.id,
@@ -207,7 +209,8 @@ export const answerTower = createServerFn({ method: "POST" })
       `select correct_answer from questions where id = $1`,
       [data.questionId],
     );
-    const ok = q[0]?.correct_answer === data.answer;
+    const ok = q[0] ? answerKey(q[0].correct_answer) === data.answer : false;
+
     const answers = (typeof row.answers === "string" ? JSON.parse(row.answers) : row.answers) as Record<
       string,
       AnswerKey

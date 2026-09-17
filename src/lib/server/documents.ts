@@ -331,6 +331,55 @@ export const extractExamFromDoc = createServerFn({ method: "POST" })
     return draft;
   });
 
+async function insertExamFromDraft(
+  sql: Awaited<ReturnType<typeof getSql>>,
+  userId: string,
+  title: string,
+  qs: OcrDraftQuestion[],
+  source: string,
+) {
+  const id = `ocr-${crypto.randomUUID()}`;
+  const t = title.trim().slice(0, 80) || "Đề bóc tách";
+  await sql.query(
+    `insert into exams (id, title, exam_type, duration_seconds, total_questions, description, author_name, source_label, is_public, created_by)
+     values ($1,$2,'FORGED',$3,$4,$5,$6,$7, true, $8)`,
+    [
+      id,
+      t,
+      Math.max(600, qs.length * 90),
+      qs.length,
+      `${source} · ${qs.length} câu`,
+      "Thiên Nhãn OCR",
+      source,
+      userId,
+    ],
+  );
+  for (let i = 0; i < qs.length; i++) {
+    const q = qs[i]!;
+    await sql.query(
+      `insert into questions
+        (id, exam_id, order_index, content, option_a, option_b, option_c, option_d, correct_answer, explanation, topic, difficulty, score)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [
+        `${id}-${i}`,
+        id,
+        i + 1,
+        q.content.slice(0, 800),
+        q.optionA.slice(0, 240),
+        q.optionB.slice(0, 240),
+        q.optionC.slice(0, 240),
+        q.optionD.slice(0, 240),
+        asKey(q.correct),
+        (q.explanation ?? "").slice(0, 600),
+        (q.topic || "Tổng hợp").slice(0, 40),
+        asDiff(q.difficulty),
+        Number(q.score) || 0.5,
+      ],
+    );
+  }
+  return { examId: id, title: t, count: qs.length };
+}
+
 export const saveOcrExam = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((input: { docId: string; title: string; questions: OcrDraftQuestion[] }) => input)
@@ -343,47 +392,22 @@ export const saveOcrExam = createServerFn({ method: "POST" })
       [data.docId, context.userId],
     );
     if (!owned[0]) throw new Error("Không tìm thấy tài liệu");
-    const id = `ocr-${crypto.randomUUID()}`;
-    const title = data.title.trim().slice(0, 80) || "Đề bóc tách";
-    await sql.query(
-      `insert into exams (id, title, exam_type, duration_seconds, total_questions, description, author_name, source_label, is_public, created_by)
-       values ($1,$2,'FORGED',$3,$4,$5,$6,'OCR Tàng Thư', true, $7)`,
-      [
-        id,
-        title,
-        Math.max(600, qs.length * 90),
-        qs.length,
-        `Thiên Nhãn bóc từ Tàng Thư · ${qs.length} câu`,
-        "Thiên Nhãn OCR",
-        context.userId,
-      ],
-    );
-    for (let i = 0; i < qs.length; i++) {
-      const q = qs[i]!;
-      await sql.query(
-        `insert into questions
-          (id, exam_id, order_index, content, option_a, option_b, option_c, option_d, correct_answer, explanation, topic, difficulty, score)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-        [
-          `${id}-${i}`,
-          id,
-          i + 1,
-          q.content.slice(0, 800),
-          q.optionA.slice(0, 240),
-          q.optionB.slice(0, 240),
-          q.optionC.slice(0, 240),
-          q.optionD.slice(0, 240),
-          asKey(q.correct),
-          (q.explanation ?? "").slice(0, 600),
-          (q.topic || "Tổng hợp").slice(0, 40),
-          asDiff(q.difficulty),
-          Number(q.score) || 0.5,
-        ],
-      );
-    }
+    const saved = await insertExamFromDraft(sql, context.userId, data.title, qs, "OCR Tàng Thư");
     await sql.query(
       `update documents set ocr_exam_id = $3, ocr_json = $4::jsonb where id = $1 and user_id = $2`,
-      [data.docId, context.userId, id, JSON.stringify({ title, questions: qs })],
+      [data.docId, context.userId, saved.examId, JSON.stringify({ title: saved.title, questions: qs })],
     );
-    return { examId: id, title, count: qs.length };
+    return saved;
   });
+
+export const savePastedExam = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: { title: string; questions: OcrDraftQuestion[] }) => input)
+  .handler(async ({ context, data }) => {
+    const qs = data.questions.slice(0, 12).filter((q) => q.content.trim());
+    if (qs.length < 2) throw new Error("Cần ít nhất 2 câu để lập đề");
+    const sql = await getSql();
+    await ensureProfile(sql, context.userId);
+    return insertExamFromDraft(sql, context.userId, data.title, qs, "Dán chữ Tàng Thư");
+  });
+

@@ -23,3 +23,11 @@ export function roomCode() {
   for (let i = 0; i < 5; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
   return out;
 }
+
+export function answerKey(v: unknown): "A" | "B" | "C" | "D" {
+  const s = String(v ?? "A").trim().toUpperCase();
+  if (s.startsWith("B")) return "B";
+  if (s.startsWith("C")) return "C";
+  if (s.startsWith("D")) return "D";
+  return "A";
+}

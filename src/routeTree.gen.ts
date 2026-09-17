@@ -28,6 +28,7 @@ import { Route as PvpMatchIdRouteImport } from './routes/pvp/$matchId'
 import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalRoomIdRouteImport } from './routes/survival/$roomId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ExamsExamIdIndexRouteImport } from './routes/exams/$examId.index'
 import { Route as ExamsExamIdTakeRouteImport } from './routes/exams/$examId.take'
 import { Route as ExamsExamIdResultAttemptIdRouteImport } from './routes/exams/$examId.result.$attemptId'
 
@@ -126,6 +127,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamsExamIdIndexRoute = ExamsExamIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExamsExamIdRoute,
+} as any)
 const ExamsExamIdTakeRoute = ExamsExamIdTakeRouteImport.update({
   id: '/take',
   path: '/take',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/survival/': typeof SurvivalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/exams/$examId/take': typeof ExamsExamIdTakeRoute
+  '/exams/$examId/': typeof ExamsExamIdIndexRoute
   '/exams/$examId/result/$attemptId': typeof ExamsExamIdResultAttemptIdRoute
 }
 export interface FileRoutesByTo {
@@ -171,7 +178,6 @@ export interface FileRoutesByTo {
   '/tower': typeof TowerRoute
   '/tutor': typeof TutorRoute
   '/documents/$docId': typeof DocumentsDocIdRoute
-  '/exams/$examId': typeof ExamsExamIdRouteWithChildren
   '/guilds/$guildId': typeof GuildsGuildIdRoute
   '/pvp/$matchId': typeof PvpMatchIdRoute
   '/survival/$roomId': typeof SurvivalRoomIdRoute
@@ -182,6 +188,7 @@ export interface FileRoutesByTo {
   '/survival': typeof SurvivalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/exams/$examId/take': typeof ExamsExamIdTakeRoute
+  '/exams/$examId': typeof ExamsExamIdIndexRoute
   '/exams/$examId/result/$attemptId': typeof ExamsExamIdResultAttemptIdRoute
 }
 export interface FileRoutesById {
@@ -206,6 +213,7 @@ export interface FileRoutesById {
   '/survival/': typeof SurvivalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/exams/$examId/take': typeof ExamsExamIdTakeRoute
+  '/exams/$examId/': typeof ExamsExamIdIndexRoute
   '/exams/$examId/result/$attemptId': typeof ExamsExamIdResultAttemptIdRoute
 }
 export interface FileRouteTypes {
@@ -231,6 +239,7 @@ export interface FileRouteTypes {
     | '/survival/'
     | '/api/auth/$'
     | '/exams/$examId/take'
+    | '/exams/$examId/'
     | '/exams/$examId/result/$attemptId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -243,7 +252,6 @@ export interface FileRouteTypes {
     | '/tower'
     | '/tutor'
     | '/documents/$docId'
-    | '/exams/$examId'
     | '/guilds/$guildId'
     | '/pvp/$matchId'
     | '/survival/$roomId'
@@ -254,6 +262,7 @@ export interface FileRouteTypes {
     | '/survival'
     | '/api/auth/$'
     | '/exams/$examId/take'
+    | '/exams/$examId'
     | '/exams/$examId/result/$attemptId'
   id:
     | '__root__'
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/survival/'
     | '/api/auth/$'
     | '/exams/$examId/take'
+    | '/exams/$examId/'
     | '/exams/$examId/result/$attemptId'
   fileRoutesById: FileRoutesById
 }
@@ -437,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exams/$examId/': {
+      id: '/exams/$examId/'
+      path: '/'
+      fullPath: '/exams/$examId/'
+      preLoaderRoute: typeof ExamsExamIdIndexRouteImport
+      parentRoute: typeof ExamsExamIdRoute
+    }
     '/exams/$examId/take': {
       id: '/exams/$examId/take'
       path: '/take'
@@ -456,11 +473,13 @@ declare module '@tanstack/react-router' {
 
 interface ExamsExamIdRouteChildren {
   ExamsExamIdTakeRoute: typeof ExamsExamIdTakeRoute
+  ExamsExamIdIndexRoute: typeof ExamsExamIdIndexRoute
   ExamsExamIdResultAttemptIdRoute: typeof ExamsExamIdResultAttemptIdRoute
 }
 
 const ExamsExamIdRouteChildren: ExamsExamIdRouteChildren = {
   ExamsExamIdTakeRoute: ExamsExamIdTakeRoute,
+  ExamsExamIdIndexRoute: ExamsExamIdIndexRoute,
   ExamsExamIdResultAttemptIdRoute: ExamsExamIdResultAttemptIdRoute,
 }
 

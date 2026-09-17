@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { MathText } from "@/lib/math-text";
-import { parseExamText } from "@/lib/ocr-parse";
+import { parseExamText, SAMPLE_EXAM_TEXT } from "@/lib/ocr-parse";
 import { extractExamFromDoc, getDoc, saveOcrExam } from "@/lib/server/documents";
 import type { AnswerKey, OcrDraft, OcrDraftQuestion } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,7 @@ function DocView() {
   const [draft, setDraft] = useState<OcrDraft | null>(null);
   const [busy, setBusy] = useState<"ocr" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paste, setPaste] = useState("");
+  const pasteRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     getDoc({ data: docId }).then((d) => {
@@ -79,6 +79,16 @@ function DocView() {
     setDraft((d) => (d ? { ...d, questions: d.questions.filter((_, idx) => idx !== i) } : d));
   }
 
+  function parsePaste() {
+    const raw = pasteRef.current?.value ?? "";
+    setError(null);
+    try {
+      setDraft(parseExamText(raw, doc?.title ?? "Đề dán chữ"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không bóc được chữ");
+    }
+  }
+
   const low = draft?.questions.filter((q) => q.confidence === "low").length ?? 0;
 
   return (
@@ -120,25 +130,25 @@ function DocView() {
         <div className="jade-frame mt-6 space-y-3 rounded-[20px] p-4">
           <p className="text-sm font-medium">Dán chữ đề (khi Thiên Nhãn hết linh khí)</p>
           <Textarea
-            value={paste}
-            onChange={(e) => setPaste(e.target.value)}
+            ref={pasteRef}
             rows={7}
             placeholder={"Câu 1. ...\nA. ...\nB. ...\nC. ...\nD. ...\nCâu 2. ..."}
           />
-          <Button
-            variant="outline"
-            disabled={!paste.trim() || busy !== null}
-            onClick={() => {
-              setError(null);
-              try {
-                setDraft(parseExamText(paste, doc?.title ?? "Đề dán chữ"));
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Không bóc được chữ");
-              }
-            }}
-          >
-            Bóc từ chữ
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" disabled={busy !== null} onClick={parsePaste}>
+              Bóc từ chữ
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={busy !== null}
+              onClick={() => {
+                if (pasteRef.current) pasteRef.current.value = SAMPLE_EXAM_TEXT;
+                parsePaste();
+              }}
+            >
+              Dùng đề mẫu
+            </Button>
+          </div>
         </div>
 
         {draft ? (

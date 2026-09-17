@@ -6,7 +6,8 @@ import { RANKED_ELO_BAND } from "@/lib/realms";
 import { insertShuffledExam } from "@/lib/server/exams";
 import { ensureSeed } from "@/lib/server/seed";
 import type { AnswerKey, PvpMatch, PvpMode, PvpStatus } from "@/lib/types";
-import { roomCode } from "@/lib/utils";
+import { answerKey, roomCode } from "@/lib/utils";
+
 
 const BOTS = [
   { id: "bot:thanh-van", name: "Thanh Vân Tử" },
@@ -197,9 +198,10 @@ async function applyBotProgress(sql: Awaited<ReturnType<typeof getSql>>, matchId
   for (let i = 0; i < shouldAnswer; i++) {
     const question = qs[i]!;
     const correct = hash01(`${matchId}:${question.id}`) < BOT_ACCURACY;
+    const right = answerKey(question.correct_answer);
     const pick: AnswerKey = correct
-      ? question.correct_answer
-      : ((["A", "B", "C", "D"].find((x) => x !== question.correct_answer) as AnswerKey) ?? "A");
+      ? right
+      : ((["A", "B", "C", "D"].find((x) => x !== right) as AnswerKey) ?? "A");
     answers[question.id] = pick;
     if (correct) score += Number(question.score);
   }
@@ -506,7 +508,8 @@ export const submitPvpAnswer = createServerFn({ method: "POST" })
     const current = parseAnswers(isP1 ? m.player1_answers : m.player2_answers);
     if (current[data.questionId]) return mapMatch(m);
     current[data.questionId] = data.answer;
-    const add = data.answer === q[0].correct_answer ? Number(q[0].score) : 0;
+    const add = data.answer === answerKey(q[0].correct_answer) ? Number(q[0].score) : 0;
+
     const nextScore =
       Math.round((Number(isP1 ? m.player1_score : m.player2_score) + add) * 100) / 100;
     await sql.query(`update pvp_matches set ${colAns} = $1::jsonb, ${colScore} = $2 where id = $3`, [

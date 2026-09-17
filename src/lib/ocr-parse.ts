@@ -1,5 +1,32 @@
 import type { AnswerKey, OcrDraft, OcrDraftQuestion } from "@/lib/types";
 
+export const SAMPLE_EXAM_TEXT = `Đề THPTQG minh họa — Đại số 12
+Câu 1. Cho $f(x)=x^3-3x^2+2$. Đạo hàm $f'(x)$ bằng
+A. $3x^2-6x$
+B. $3x^2-3x$
+C. $x^2-6x$
+D. $3x^2-6$
+Đáp án: A
+Câu 2. Nghiệm của phương trình $x^2-5x+6=0$ là
+A. $2$ và $3$
+B. $1$ và $6$
+C. $-2$ và $-3$
+D. $0$ và $5$
+Đáp án: A
+Câu 3. $\\int_0^1 2x\\,dx$ bằng
+A. $0$
+B. $1$
+C. $2$
+D. $1/2$
+Đáp án: B
+Câu 4. Môđun của số phức $z=3-4i$ bằng
+A. $5$
+B. $7$
+C. $1$
+D. $25$
+Đáp án: A
+`;
+
 const KEYS: AnswerKey[] = ["A", "B", "C", "D"];
 
 function asKey(v: string): AnswerKey {

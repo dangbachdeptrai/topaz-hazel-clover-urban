@@ -15,6 +15,7 @@ import { insertShuffledExam } from "@/lib/server/exams";
 import { ensureSeed } from "@/lib/server/seed";
 import type { AnswerKey, BrPlayer, BrRoom, BrStatus, QuestionPublic } from "@/lib/types";
 import { isBotId } from "@/lib/realms";
+import { answerKey } from "@/lib/utils";
 
 type RoomRow = {
   id: string;
@@ -212,7 +213,7 @@ async function resolveRound(sql: Awaited<ReturnType<typeof getSql>>, room: RoomR
     `select correct_answer from questions where id = $1`,
     [qid],
   );
-  const correct = (qrows[0]?.correct_answer ?? "A").toUpperCase();
+  const correct = answerKey(qrows[0]?.correct_answer);
 
   const players = await loadPlayers(sql, room.id);
   const alive = players.filter((p) => p.is_alive);
@@ -541,7 +542,8 @@ export const getBrQuestion = createServerFn({ method: "POST" })
     const q = rows[0];
     if (!q) return { question: null as QuestionPublic | null };
     const bonus = perkBonus(await equippedPerks(sql, context.userId));
-    const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== q.correct_answer);
+    const wrong = (["A", "B", "C", "D"] as const).filter((k) => k !== answerKey(q.correct_answer));
+
     const faded = bonus.eliminate ? wrong[Number(room.round_index) % wrong.length] : null;
     const question: QuestionPublic = {
       id: q.id,
